@@ -23,4 +23,8 @@ use Illuminate\Database\Eloquent\Model;
 class Periodtype extends Model
 {
     //
+    public function timelinePeriods()
+    {
+        return $this->hasMany(TimelinePeriod::class);
+    }
 }

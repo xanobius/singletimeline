@@ -14,7 +14,7 @@ class TimelinePeriodController extends Controller
      */
     public function index()
     {
-        //
+        return TimelinePeriod::with('schedule')->get();
     }
 
     /**
