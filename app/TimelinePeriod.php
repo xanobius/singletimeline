@@ -42,6 +42,9 @@ class TimelinePeriod extends Model
         return $this->belongsTo(Periodtype::class, 'periodtype_id');
     }
 
-
+    public function schedule()
+    {
+        return $this->morphOne('App\Schedule', 'schedulable');
+    }
 
 }
