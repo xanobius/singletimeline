@@ -7,6 +7,6 @@ use Faker\Generator as Faker;
 
 $factory->define(Timeline::class, function (Faker $faker) {
     return [
-        //
+        'name' => 'TL ' . $faker->name
     ];
 });
