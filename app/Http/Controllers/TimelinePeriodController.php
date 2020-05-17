@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Chain;
 use App\TimelinePeriod;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TimelinePeriodController extends Controller
@@ -14,7 +16,12 @@ class TimelinePeriodController extends Controller
      */
     public function index()
     {
-        return TimelinePeriod::with('schedule')->get();
+        $chain = new Chain(
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->endOfMonth(),
+            'DEFAULT TEMPLATE');
+        return $chain->getChain();
+//        dd(TimelinePeriod::with('schedule')->get());
     }
 
     /**
