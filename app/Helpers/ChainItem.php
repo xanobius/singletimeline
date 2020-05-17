@@ -1,6 +1,9 @@
 <?php
 namespace App\Helpers;
 
+use Carbon\Carbon;
+use phpDocumentor\Reflection\Types\Boolean;
+
 class ChainItem
 {
     /**
@@ -51,14 +54,24 @@ class ChainItem
      */
     private $content;
 
-    public function __construct($s, $e, ChainItem $p = null, ChainItem $n = null, $c = null, $w = false)
+    public function __construct(
+        Carbon $start,
+        Carbon $end,
+        ChainItem $previous = null,
+        ChainItem $next = null,
+        $content = null,
+        bool $writable = false)
     {
-        $this->setPrevious($p)->setNext($n)
-            ->setStart($s)->setEnd($e)
-            ->setContent($c)
-            ->setWritable($w);
+        $this->setPrevious($previous)->setNext($next)
+            ->setStart($start)->setEnd($end)
+            ->setContent($content)
+            ->setWritable($writable);
     }
 
+    /**
+     * Return formatted info of the item
+     * @return array
+     */
     public function getItem()
     {
         return [
@@ -68,11 +81,20 @@ class ChainItem
         ];
     }
 
+    /**
+     * return the first Element of the chain
+     * @return ChainItem|mixed
+     */
     public function getFirst()
     {
         return $this->first ?
             $this :
             $this->getPrevious()->getFirst();
+    }
+
+    public function insertByRule($rule)
+    {
+
     }
 
 
@@ -128,13 +150,15 @@ class ChainItem
      * @param ChainItem|null $previous
      * @return ChainItem
      */
-    public function setPrevious(ChainItem $previous = null): ChainItem
+    public function setPrevious(ChainItem $previous = null, bool $by_next = false): ChainItem
     {
         $this->previous = $previous;
         if($previous == null){
             $this->first = true;
         }else{
-            $previous->setNext($this);
+            if( ! $by_next){
+                $previous->setNext($this, true);
+            }
             // TODO: Also adjust end-time (-1 Second ?)
         }
         return $this;
@@ -152,13 +176,15 @@ class ChainItem
      * @param ChainItem|null $next
      * @return ChainItem
      */
-    public function setNext(ChainItem $next = null): ChainItem
+    public function setNext(ChainItem $next = null, bool $by_previous = false): ChainItem
     {
         $this->next = $next;
         if($next == null){
             $this->last = true;
         }else{
-            $next->setPrevious($this);
+            if( ! $by_previous){
+                $next->setPrevious($this, true);
+            }
             // TODO: also adjust start-time (+1 Second ?)
         }
         return $this;

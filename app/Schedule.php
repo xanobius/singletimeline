@@ -2,7 +2,9 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 /**
  * App\Schedule
@@ -38,8 +40,54 @@ class Schedule extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'dateStart' => 'datetime',
+        'dateEnd' => 'datetime'
+    ];
+
     public function schedulable()
     {
         return $this->morphTo();
+    }
+
+    public function hasBlockInPeriod(Carbon $start, Carbon $end)
+    {
+        // In Date-Range?
+        if ( ($this->type & config('timeline.schedule_types.daterange')) == config('timeline.schedule_types.daterange')) {
+            if ($start > $this->dateEnd || $end < $this->dateStart) {
+                return false; // Out of bound
+            }
+        }
+
+        // Valid weekday present?
+        if( ($this->type & config('timeline.schedule_types.weekdays')) == config('timeline.schedule_types.weekdays')){
+            $valid = false;
+            $tmp = clone $start;
+            while($tmp->timestamp <= $end->timestamp){
+                $valid = $this->isInWeekdays($tmp) ? true : $valid;
+                $tmp->addDay();
+            }
+            if( ! $valid ){
+                return false;
+            }
+        }
+
+        // in time-Range
+        if( ($this->type & config('timeline.schedule_types.timerange')) == config('timeline.schedule_types.timerange')) {
+                // its only important if its less than 24 hours
+            if($start->diff($end)->days < 1){
+                if($start->format('H:i:s') > $this->timeEnd || $end->format('H:i:s') < $this->timeStart){
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private function isInWeekdays(Carbon $day)
+    {
+        $wd = config('timeline.weekdays.' . strtolower($day->dayName));
+        return ($this->weekdays & $wd) == $wd;
     }
 }
