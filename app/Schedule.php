@@ -70,19 +70,32 @@ class Schedule extends Model
 
         // time restrictions?
         if ($this->hasTimeRange()){
-            if($finalStartDate->format('H:i:s') < $this->timeStart){
-                $finalStartDate->setTimeFromTimeString($this->timeStart);
-            }
-            if($finalStartDate->format('Ymd') == $end->format('Ymd')){
-                // same day! check wich time to take
-                if($end->format('His') > $this->timeEnd){
+            // Is it even possible in this day? Otherways, go to the next day
+            if($finalStartDate->format('H:i:s') > $this->timeEnd){
+                // Already to late. Next day an option?
+                if($finalStartDate->format('Ymd') < $end->format('Ymd')){
+                    // Check next day
+                    return $this->getNextBlock($finalStartDate->addDay()->startOfDay(), $end);
+                }else{
+                    // Nope... That was it
+                    return false;
+                }
+            }else{
+                // Endtime not before Starttime. Check Starttime itself
+                if($finalStartDate->format('H:i:s') < $this->timeStart){
+                    $finalStartDate->setTimeFromTimeString($this->timeStart);
+                }
+
+                if($finalEndDate->format('H:i:s') > $this->timeEnd ||
+                        $finalEndDate->format('Ymd') > $finalStartDate->format('Ymd')){
                     $finalEndDate->setTimeFromTimeString($this->timeEnd);
                 }
 
-            }else{
-                //other day. Set endtime and return
-                $finalEndDate->setDateFrom($finalStartDate)->setTimeFromTimeString($this->timeEnd);
+                $finalEndDate->setYear($finalStartDate->year)
+                    ->setMonth($finalStartDate->month)
+                    ->setDay($finalStartDate->day);
             }
+
         }else{
             return 'todo';
         }
@@ -138,12 +151,12 @@ class Schedule extends Model
 
     private function isDayValid(Carbon $date)
     {
-        if (($this->type & config('timeline.schedule_types.daterange')) == config('timeline.schedule_types.daterange')) {
+        if ($this->hasDateRange()) {
             if ($date > $this->dateEnd || $date < $this->dateStart) {
                 return false;
             }
         }
-        if (($this->type & config('timeline.schedule_types.weekdays')) == config('timeline.schedule_types.weekdays')) {
+        if ($this->hasWeekdays()) {
             if (!$this->isInWeekdays($date)) {
                 return false;
             }

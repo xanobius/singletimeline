@@ -16,27 +16,52 @@ class Chain
     {
         $this->current = new ChainItem($start, $end, null, null, $defaultContent, true);
 
-        new ChainItem($end->addSecond(), $end->addDays(2)->endOfDay(), $this->current, null, '2');
-
-        new ChainItem($end->addDays(3)->startOfDay(), $end->addDays(3)->endOfDay(), $this->current->getNext(), null, '3');
+//        new ChainItem($end->addDays(3)->startOfDay(), $end->addDays(3)->endOfDay(), $this->current->getNext(), null, '3');
     }
 
-    public function insertSchedule(Schedule $schedule)
+    public function insertSchedule(Schedule $schedule, $content)
     {
         // How many elements can be inserted in the chain?
         $items = 0;
         $this->rewind();
         // loop through all elements
-        while( ! $this->current->isLast()){
+        $search = true;
+        $runs = 0;
+        while( $search){
+            $runs++;
+            if($runs > 10)break;
+
             if(! $this->current->isWritable()){
+                if($this->current->isLast()){
+                    break;
+                }
                 $this->current = $this->current->getNext();
+//                dump('Current is: ' . $this->current->number);
+//                dump($this->current);
             }else{
                 // Search if there is some space to insert
                 // delegate it to the Model, it's his job
+                $boundaries = $schedule->getNextBlock(
+                    $this->current->getStart(),
+                    $this->current->getEnd()
+                );
 
-
+                if($boundaries){
+                    $ci = new ChainItem($boundaries[0], $boundaries[1], null, null, $content, false);
+                    $this->current = $this->current->insertChainItem($ci);
+                }else{
+                    // no space in this one, go to the next
+                    if($this->current->isLast()){
+                        break;
+                    }
+                    $this->current = $this->current->getNext();
+                }
+//                dump('Current is: ' . $this->current->number);
+//                dump($this->current);
+//                break;
             }
         }
+        return;
 
     }
 
@@ -44,9 +69,12 @@ class Chain
     {
         $this->rewind();
         $tot = [];
-        do {
+        $tot[] = $this->current->getItem();
+
+        while($this->current->getNext() != null){
+            $this->current = $this->current->getNext();
             $tot[] = $this->current->getItem();
-        } while ($this->current = $this->current->getNext());
+        }
 
         return $tot;
     }

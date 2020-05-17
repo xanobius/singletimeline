@@ -151,8 +151,8 @@ class ScheduleTest extends TestCase
             Carbon::create(2020, 6, 5)
         );
 
-        $this->assertTrue($times[0]->format('YmdHi') == '202006030900');
-        $this->assertTrue($times[1]->format('YmdHi') == '202006031600');
+        $this->assertEquals('202006030900', $times[0]->format('YmdHi'));
+        $this->assertEquals('202006031600', $times[1]->format('YmdHi'));
 
 
         $times = $schedule->getNextBlock(
@@ -160,16 +160,16 @@ class ScheduleTest extends TestCase
             Carbon::create(2020, 6, 3, 12)
         );
 
-        $this->assertTrue($times[0]->format('YmdHi') == '202006031000');
-        $this->assertTrue($times[1]->format('YmdHi') == '202006031200');
+        $this->assertEquals('202006031000', $times[0]->format('YmdHi'));
+        $this->assertEquals('202006031200', $times[1]->format('YmdHi'));
 
         $times = $schedule->getNextBlock(
             Carbon::create(2020, 6, 3, 10),
             Carbon::create(2020, 6, 4, 12)
         );
 
-        $this->assertTrue($times[0]->format('YmdHi') == '202006031000');
-        $this->assertTrue($times[1]->format('YmdHi') == '202006031600');
+        $this->assertEquals('202006031000', $times[0]->format('YmdHi'));
+        $this->assertEquals('202006031600', $times[1]->format('YmdHi'));
 
 
         $times = $schedule->getNextBlock(
@@ -177,8 +177,8 @@ class ScheduleTest extends TestCase
             Carbon::create(2020, 6, 3, 12)
         );
 
-        $this->assertTrue($times[0]->format('YmdHi') == '202006030900');
-        $this->assertTrue($times[1]->format('YmdHi') == '202006031200');
+        $this->assertEquals('202006030900', $times[0]->format('YmdHi'));
+        $this->assertEquals('202006031200', $times[1]->format('YmdHi'));
 
     }
 

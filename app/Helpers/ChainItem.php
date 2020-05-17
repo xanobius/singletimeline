@@ -54,6 +54,10 @@ class ChainItem
      */
     private $content;
 
+    public $number;
+
+    public static $counter = 0;
+
     public function __construct(
         Carbon $start,
         Carbon $end,
@@ -62,6 +66,9 @@ class ChainItem
         $content = null,
         bool $writable = false)
     {
+        $this->number = ChainItem::$counter;
+        ChainItem::$counter++;
+
         $this->setPrevious($previous)->setNext($next)
             ->setStart($start)->setEnd($end)
             ->setContent($content)
@@ -77,7 +84,8 @@ class ChainItem
         return [
             'start' => $this->start,
             'end' => $this->end,
-            'content' => $this->content
+            'content' => $this->content,
+            'number' => $this->number
         ];
     }
 
@@ -92,9 +100,48 @@ class ChainItem
             $this->getPrevious()->getFirst();
     }
 
-    public function insertByRule($rule)
+    public function insertChainItem(ChainItem $item)
     {
+        // EXACT MATCH??
 
+
+        // flush with the start
+        if($item->getStart()->format('YmdHi') == $this->getStart()->format('YmdHi')){
+            dump('at the start');
+            // Put it before: Return myself (its the last)
+            $this->setStart($item->getEnd()->addMinute());
+            $item->setPrevious($item->getPrevious());
+            $this->setPrevious($item);
+            return $this;
+        }else{
+            // flush with the end?
+            if($item->getEnd()->format('YmdHi') == $this->getEnd()->format('YmdHis')){
+                dump('at the end');
+                // Put it after: Return new element
+                $this->setEnd($item->getStart()->subMinute());
+                $item->setNext($this->getNext());
+                $this->setNext($item);
+                return $item;
+            }
+        }
+        // put it in between. Need to create additional ChainItem
+        dump('in between');
+
+        //
+
+        $newItem = new ChainItem(
+            $item->getEnd()->addMinute(),
+            $this->getEnd(),
+            $item,
+            $this->getNext(),
+            $this->content,
+            true
+        );
+
+        $this->setEnd($item->getStart()->subMinute());
+        $this->setNext($item);
+
+        return $item;
     }
 
 
@@ -150,13 +197,14 @@ class ChainItem
      * @param ChainItem|null $previous
      * @return ChainItem
      */
-    public function setPrevious(ChainItem $previous = null, bool $by_next = false): ChainItem
+    public function setPrevious(ChainItem $previous = null, bool $stop_viceverca = false): ChainItem
     {
         $this->previous = $previous;
         if($previous == null){
             $this->first = true;
         }else{
-            if( ! $by_next){
+            $this->first = false;
+            if( ! $stop_viceverca){
                 $previous->setNext($this, true);
             }
             // TODO: Also adjust end-time (-1 Second ?)
@@ -182,6 +230,7 @@ class ChainItem
         if($next == null){
             $this->last = true;
         }else{
+            $this->last = false;
             if( ! $by_previous){
                 $next->setPrevious($this, true);
             }
@@ -213,7 +262,7 @@ class ChainItem
      */
     public function getStart(): \Carbon\Carbon
     {
-        return $this->start;
+        return clone $this->start;
     }
 
     /**
@@ -231,7 +280,7 @@ class ChainItem
      */
     public function getEnd(): \Carbon\Carbon
     {
-        return $this->end;
+        return clone $this->end;
     }
 
     /**
