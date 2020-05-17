@@ -15,8 +15,6 @@ class Chain
     public function __construct(Carbon $start, Carbon $end, $defaultContent)
     {
         $this->current = new ChainItem($start, $end, null, null, $defaultContent, true);
-
-//        new ChainItem($end->addDays(3)->startOfDay(), $end->addDays(3)->endOfDay(), $this->current->getNext(), null, '3');
     }
 
     public function insertSchedule(Schedule $schedule, $content)
@@ -26,18 +24,12 @@ class Chain
         $this->rewind();
         // loop through all elements
         $search = true;
-        $runs = 0;
         while( $search){
-            $runs++;
-            if($runs > 10)break;
-
             if(! $this->current->isWritable()){
                 if($this->current->isLast()){
                     break;
                 }
                 $this->current = $this->current->getNext();
-//                dump('Current is: ' . $this->current->number);
-//                dump($this->current);
             }else{
                 // Search if there is some space to insert
                 // delegate it to the Model, it's his job
@@ -56,13 +48,9 @@ class Chain
                     }
                     $this->current = $this->current->getNext();
                 }
-//                dump('Current is: ' . $this->current->number);
-//                dump($this->current);
-//                break;
             }
         }
-        return;
-
+        return $this;
     }
 
     public function getChain()

@@ -40,6 +40,8 @@ class Schedule extends Model
 {
     protected $guarded = [];
 
+    public static $searches = 0;
+
     protected $casts = [
         'dateStart' => 'datetime',
         'dateEnd' => 'datetime'
@@ -52,6 +54,7 @@ class Schedule extends Model
 
     public function getNextBlock(Carbon $start, Carbon $end)
     {
+        Schedule::$searches++;
         if( ! $this->hasBlockInPeriod($start, $end)){
             return false;
         }

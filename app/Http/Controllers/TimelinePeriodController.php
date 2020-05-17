@@ -19,19 +19,29 @@ class TimelinePeriodController extends Controller
     {
 
         $chain = new Chain(
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->endOfMonth(),
+//            Carbon::now()->startOfMonth(),
+//            Carbon::now()->endOfMonth(),
+            Carbon::create(2020, 5, 1),
+            Carbon::create(2020, 6, 31),
             'DEFAULT TEMPLATE'
         );
 
-        $schedule = Schedule::first();
+        $schedule = Schedule::get();
 
-        dump($chain->getChain());
+//        dd($schedule);
+        $start = microtime(true);
 
-        $chain->insertSchedule($schedule, 'Template 2');
+        $chain->insertSchedule($schedule[0], 'Template 2');
 
-        dump($chain->getChain());
-        return '';
+        dump(microtime(true) - $start);
+
+//        $chain->insertSchedule($schedule[1], 'Template 3');
+        $chain->insertSchedule($schedule[2], 'Template 4');
+
+        dump(microtime(true) - $start);
+        dump('Searches: ' . Schedule::$searches);
+
+        return $chain->getChain();
     }
 
     /**

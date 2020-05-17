@@ -107,7 +107,6 @@ class ChainItem
 
         // flush with the start
         if($item->getStart()->format('YmdHi') == $this->getStart()->format('YmdHi')){
-            dump('at the start');
             // Put it before: Return myself (its the last)
             $this->setStart($item->getEnd()->addMinute());
             $item->setPrevious($item->getPrevious());
@@ -116,7 +115,6 @@ class ChainItem
         }else{
             // flush with the end?
             if($item->getEnd()->format('YmdHi') == $this->getEnd()->format('YmdHis')){
-                dump('at the end');
                 // Put it after: Return new element
                 $this->setEnd($item->getStart()->subMinute());
                 $item->setNext($this->getNext());
@@ -125,10 +123,6 @@ class ChainItem
             }
         }
         // put it in between. Need to create additional ChainItem
-        dump('in between');
-
-        //
-
         $newItem = new ChainItem(
             $item->getEnd()->addMinute(),
             $this->getEnd(),

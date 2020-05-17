@@ -52,10 +52,26 @@ class DatabaseSeeder extends Seeder
 
         $schedule = new \App\Schedule();
         $schedule->type = config('timeline.schedule_types.daterange') + config('timeline.schedule_types.timerange');
-        $schedule->dateStart = \Carbon\Carbon::create(2020, 6, 1);
-        $schedule->dateStart = \Carbon\Carbon::create(2020, 6, 31);
+        $schedule->dateStart = \Carbon\Carbon::create(2020, 5, 1);
+        $schedule->dateEnd = \Carbon\Carbon::create(2020, 5, 15);
         $schedule->timeStart = '20:00';
         $schedule->timeEnd = '23:00';
+        $schedule->schedulable()->associate($tlper);
+        $schedule->save();
+
+
+        /* New Period-Content, overlapping the previous */
+        $tlper = new \App\TimelinePeriod();
+        $tlper->timeline()->associate($timelines[0]);
+        $tlper->periodtype()->associate($periodtypes[2]);
+        $tlper->save();
+
+        $schedule = new \App\Schedule();
+        $schedule->type = config('timeline.schedule_types.daterange') + config('timeline.schedule_types.timerange');
+        $schedule->dateStart = \Carbon\Carbon::create(2020, 5, 7);
+        $schedule->dateEnd = \Carbon\Carbon::create(2020, 5, 20);
+        $schedule->timeStart = '13:00';
+        $schedule->timeEnd = '23:30';
         $schedule->schedulable()->associate($tlper);
         $schedule->save();
     }
