@@ -142,6 +142,85 @@ class ScheduleTest extends TestCase
         ));
     }
 
+    public function testCorrectBlockWithDatesReturn ()
+    {
+        $schedule = $this->getFullblownSchedule();
+
+        $times = $schedule->getNextBlock(
+            Carbon::create(2020, 6, 2),
+            Carbon::create(2020, 6, 5)
+        );
+
+        $this->assertTrue($times[0]->format('YmdHi') == '202006030900');
+        $this->assertTrue($times[1]->format('YmdHi') == '202006031600');
+
+
+        $times = $schedule->getNextBlock(
+            Carbon::create(2020, 6, 3, 10),
+            Carbon::create(2020, 6, 3, 12)
+        );
+
+        $this->assertTrue($times[0]->format('YmdHi') == '202006031000');
+        $this->assertTrue($times[1]->format('YmdHi') == '202006031200');
+
+        $times = $schedule->getNextBlock(
+            Carbon::create(2020, 6, 3, 10),
+            Carbon::create(2020, 6, 4, 12)
+        );
+
+        $this->assertTrue($times[0]->format('YmdHi') == '202006031000');
+        $this->assertTrue($times[1]->format('YmdHi') == '202006031600');
+
+
+        $times = $schedule->getNextBlock(
+            Carbon::create(2020, 6, 2, 10),
+            Carbon::create(2020, 6, 3, 12)
+        );
+
+        $this->assertTrue($times[0]->format('YmdHi') == '202006030900');
+        $this->assertTrue($times[1]->format('YmdHi') == '202006031200');
+
+    }
+
+    public function testEmptyBlockReturn ()
+    {
+        $schedule = $this->getFullblownSchedule();
+
+        $this->assertFalse($schedule->getNextBlock(
+            Carbon::create(2020, 5, 1),
+            Carbon::create(2020, 6, 1, 8, 0)
+        ));
+
+        $this->assertFalse($schedule->getNextBlock(
+            Carbon::create(2020, 6, 29, 17),
+            Carbon::create(2020, 7, 1 )
+        ));
+
+        $this->assertFalse($schedule->getNextBlock(
+            Carbon::create(2020, 6, 12, 16, 01),
+            Carbon::create(2020, 6, 15, 8, 59)
+        ));
+    }
+
+    private function getFullblownSchedule()
+    {
+        $tlper = factory(TimelinePeriod::class)->create();
+        $schedule = new Schedule();
+        $schedule->type = config('timeline.schedule_types.weekdays') +
+            config('timeline.schedule_types.timerange') +
+            config('timeline.schedule_types.daterange');
+        $schedule->weekdays =config('timeline.weekdays.monday') +
+            config('timeline.weekdays.wednesday') +
+            config('timeline.weekdays.friday');
+        $schedule->dateStart = Carbon::create(2020, 6, 1);
+        $schedule->dateEnd = Carbon::create(2020, 6, 10);
+        $schedule->timeStart = '09:00';
+        $schedule->timeEnd = '16:00';
+        $schedule->schedulable()->associate($tlper);
+        $schedule->save();
+        return $schedule;
+    }
+
     private function createWeekdaySchedule()
     {
         $tlper = factory(TimelinePeriod::class)->create();

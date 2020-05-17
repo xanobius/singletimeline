@@ -17,15 +17,18 @@ class TimelinePeriodController extends Controller
      */
     public function index()
     {
-        $chain = new Chain(
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->endOfMonth(),
-            'DEFAULT TEMPLATE');
+
+//        $chain = new Chain(
+//            Carbon::now()->startOfMonth(),
+//            Carbon::now()->endOfMonth(),
+//            'DEFAULT TEMPLATE');
 
         $schedule = Schedule::get()->first();
-//        dd($schedule);
 
-        return $chain->getChain();
+        return $schedule->getNextBlock(
+            Carbon::create(2020, 6, 3, 10),
+            Carbon::create(2020, 6, 4, 12)
+        );
 //        dd(TimelinePeriod::with('schedule')->get());
     }
 
